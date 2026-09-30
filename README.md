@@ -220,19 +220,19 @@ O feed também foi testado com diferentes localidades para validar o filtro geog
 Os testes podem ser executados individualmente:
 
 ```bash
-./teste_deduplicacao.py
-./teste_update_cancel.py
-./teste_update_fora.py
-./teste_expiracao.py
-./teste_localizacao.py
+python3 tests/teste_deduplicacao.py
+python3 tests/teste_update_cancel.py
+python3 tests/teste_update_fora.py
+python3 tests/teste_expiracao.py
+python3 tests/teste_localizacao.py
 ```
 
 O projeto também contém ferramentas auxiliares para inspeção e desenvolvimento:
 
 ```text
-debug_cap.py
-defesa_civil_test.py
-teste1.py
+tools/debug_cap.py
+tools/defesa_civil_test.py
+tools/teste1.py
 defesa_civil_localizacao.py
 ```
 
@@ -355,17 +355,21 @@ defesa-civil-meshtastic-gateway/
 │
 ├── defesa_civil_alertas.py
 ├── defesa_civil_localizacao.py
-├── defesa_civil_test.py
-├── debug_cap.py
 │
-├── teste1.py
-├── teste_deduplicacao.py
-├── teste_expiracao.py
-├── teste_localizacao.py
-├── teste_update_cancel.py
-├── teste_update_fora.py
+├── tests/
+│   ├── teste_deduplicacao.py
+│   ├── teste_expiracao.py
+│   ├── teste_localizacao.py
+│   ├── teste_update_cancel.py
+│   └── teste_update_fora.py
+│
+├── tools/
+│   ├── debug_cap.py
+│   ├── defesa_civil_test.py
+│   └── teste1.py
 │
 ├── .gitignore
+├── LICENSE
 └── README.md
 ```
 
@@ -380,7 +384,7 @@ não fazem parte do repositório.
 
 ## Licença
 
-A licença do projeto ainda não foi definida.
+Este projeto está licenciado sob a **MIT License**. Consulte o arquivo `LICENSE` para o texto completo.
 
 ## Status
 
