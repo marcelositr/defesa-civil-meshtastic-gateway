@@ -4,22 +4,27 @@ import datetime
 import hashlib
 import json
 import os
-import requests
 import xml.etree.ElementTree as ET
 
-from config import (
-    GATEWAY_NAME,
-    LATITUDE,
-    LOCATION_MODE,
-    LONGITUDE,
-    MAX_MESSAGE_LENGTH,
-    STATE_FILE,
-)
+from config import LOCATION_MODE, MAX_MESSAGE_LENGTH, STATE_FILE
 from defesa_civil_localizacao import (
     alerta_atinge_localizacao,
     buscar_alertas,
     obter_localizacao,
 )
+
+
+# ============================================================
+# NAMESPACES CAP
+# ============================================================
+
+ATOM_NS = "http://www.w3.org/2005/Atom"
+CAP_NS = "urn:oasis:names:tc:emergency:cap:1.2"
+
+NS = {
+    "atom": ATOM_NS,
+    "cap": CAP_NS,
+}
 
 
 # ============================================================
