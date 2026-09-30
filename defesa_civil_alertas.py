@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 
 from config import LOCATION_MODE, MAX_MESSAGE_LENGTH, STATE_FILE
 from defesa_civil_localizacao import (
-    alerta_atinge_localizacao,
+    alerta_processado_atinge_localizacao,
     buscar_alertas,
     obter_localizacao,
 )
@@ -148,52 +148,6 @@ def extrair_alerta(entry):
         ),
         "info": info,
     }
-
-
-# ============================================================
-# VERIFICAR LOCALIZAÇÃO
-# ============================================================
-
-def alerta_atinge_localizacao(
-    alerta,
-    latitude,
-    longitude,
-):
-
-    info = alerta["info"]
-
-    areas = info.findall(
-        "cap:area",
-        NS,
-    )
-
-    for area in areas:
-
-        polygons = area.findall(
-            "cap:polygon",
-            NS,
-        )
-
-        for polygon_element in polygons:
-
-            if not polygon_element.text:
-                continue
-
-            polygon = ler_poligono(
-                polygon_element.text
-            )
-
-            if len(polygon) < 3:
-                continue
-
-            if ponto_no_poligono(
-                latitude,
-                longitude,
-                polygon,
-            ):
-                return True
-
-    return False
 
 
 # ============================================================
@@ -446,7 +400,7 @@ def processar_alertas(
 
         if msg_type == "Update":
 
-            if not alerta_atinge_localizacao(
+            if not alerta_processado_atinge_localizacao(
                 alerta,
                 latitude,
                 longitude,
@@ -524,7 +478,7 @@ def processar_alertas(
         if alerta_expirado(alerta):
             continue
 
-        if not alerta_atinge_localizacao(
+        if not alerta_processado_atinge_localizacao(
             alerta,
             latitude,
             longitude,
