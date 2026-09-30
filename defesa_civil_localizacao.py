@@ -325,6 +325,62 @@ def alerta_atinge_localizacao(
 
 
 # ============================================================
+# VERIFICAR ALERTA PROCESSADO
+# ============================================================
+
+def alerta_processado_atinge_localizacao(
+    alerta,
+    latitude,
+    longitude,
+):
+    """
+    Verifica se um alerta CAP já processado atinge a localização.
+
+    A função recebe o dicionário produzido por
+    defesa_civil_alertas.extrair_alerta() e retorna True quando
+    a localização está dentro de pelo menos um polígono.
+    """
+
+    info = alerta.get("info")
+
+    if info is None:
+        return False
+
+    areas = info.findall(
+        "cap:area",
+        NS,
+    )
+
+    for area in areas:
+
+        polygons = area.findall(
+            "cap:polygon",
+            NS,
+        )
+
+        for polygon_element in polygons:
+
+            if not polygon_element.text:
+                continue
+
+            polygon = ler_poligono(
+                polygon_element.text
+            )
+
+            if len(polygon) < 3:
+                continue
+
+            if ponto_no_poligono(
+                latitude,
+                longitude,
+                polygon,
+            ):
+                return True
+
+    return False
+
+
+# ============================================================
 # MAIN
 # ============================================================
 
