@@ -3,41 +3,13 @@
 import requests
 import xml.etree.ElementTree as ET
 
-
-# ============================================================
-# CONFIGURAÇÃO
-# ============================================================
-
-URL = "https://idapfile.mdr.gov.br/idap/api/rss/cap"
-
-# Escolha:
-#   "manual" = usa as coordenadas abaixo
-#   "gps"    = obtém a posição do GPS do nó Meshtastic
-LOCATION_MODE = "manual"
-
-# Nome exibido localmente nos alertas.
-#
-# Este nome é apenas um rótulo local.
-# Ele não precisa corresponder a uma cidade.
-#
-# Exemplos:
-#   "Ituverava"
-#   "PU2OMT"
-#   "Viagem ao Xui"
-#   "Acampamento"
-#
-LOCATION_NAME = "Ituverava"
-
-# Coordenadas usadas no modo manual.
-#
-# Estas coordenadas são utilizadas somente quando:
-#
-#     LOCATION_MODE = "manual"
-#
-# Elas não são publicadas pela aplicação.
-#
-LOCATION_LAT = -20.339
-LOCATION_LON = -47.780
+from config import (
+    DEFESA_CIVIL_URL,
+    GATEWAY_NAME,
+    LATITUDE,
+    LOCATION_MODE,
+    LONGITUDE,
+)
 
 
 # ============================================================
@@ -75,9 +47,9 @@ def obter_localizacao_manual():
     """
 
     return (
-        LOCATION_NAME,
-        LOCATION_LAT,
-        LOCATION_LON,
+        GATEWAY_NAME,
+        LATITUDE,
+        LONGITUDE,
     )
 
 
@@ -220,7 +192,7 @@ def buscar_alertas():
     }
 
     response = requests.get(
-        URL,
+        DEFESA_CIVIL_URL,
         headers=headers,
         timeout=30,
     )
