@@ -323,16 +323,12 @@ def main():
             )
 
             print(
-                f"Afeta localização: "
-                f"{alerta_original.get('affected')}"
+                f"Status: {alerta_original.get('status')}"
             )
 
-            if "updated_by" in alerta_original:
-
-                print(
-                    f"Atualizado por: "
-                    f"{alerta_original['updated_by']}"
-                )
+            print(
+                f"Tipo: {alerta_original.get('msgType')}"
+            )
 
         print()
 
@@ -354,16 +350,12 @@ def main():
             )
 
             print(
-                f"Afeta localização: "
-                f"{alerta_update.get('affected')}"
+                f"Status: {alerta_update.get('status')}"
             )
 
-            if "updated_from" in alerta_update:
-
-                print(
-                    f"Atualizado a partir de: "
-                    f"{alerta_update['updated_from']}"
-                )
+            print(
+                f"Tipo: {alerta_update.get('msgType')}"
+            )
 
         print()
 
@@ -385,26 +377,17 @@ def main():
             alerta_original is not None
             and alerta_original.get(
                 "active"
-            ) is False
+            ) is True
             and alerta_original.get(
-                "affected"
-            ) is False
+                "status"
+            ) == "Actual"
             and alerta_original.get(
-                "updated_by"
-            ) == "TEST-OUTSIDE-002"
+                "msgType"
+            ) == "Alert"
         )
 
         sucesso_update = (
-            alerta_update is not None
-            and alerta_update.get(
-                "active"
-            ) is False
-            and alerta_update.get(
-                "affected"
-            ) is False
-            and alerta_update.get(
-                "updated_from"
-            ) == "TEST-OUTSIDE-001"
+            alerta_update is None
         )
 
         print("=" * 80)
@@ -432,7 +415,7 @@ def main():
         )
 
         print(
-            "Alerta original ficou inativo: "
+            "Alerta original permaneceu ativo: "
             + (
                 "OK"
                 if sucesso_original
@@ -441,7 +424,7 @@ def main():
         )
 
         print(
-            "Update ficou inativo: "
+            "Update fora da localização não foi persistido: "
             + (
                 "OK"
                 if sucesso_update
