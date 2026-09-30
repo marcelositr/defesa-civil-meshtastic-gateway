@@ -89,10 +89,10 @@ Utiliza coordenadas definidas na configuração:
 ```python
 LOCATION_MODE = "manual"
 
-LOCATION_NAME = "Campos do Jordão"
+GATEWAY_NAME = "Gateway Defesa Civil - Campos do Jordão"
 
-LOCATION_LAT = -22.739
-LOCATION_LON = -45.591
+LATITUDE = -22.739
+LONGITUDE = -45.591
 ```
 
 Esse modo é adequado para um gateway instalado em uma localização fixa.
@@ -353,6 +353,7 @@ Isso reduz o uso desnecessário da rede LoRa e evita transformar o gateway em um
 ```text
 defesa-civil-meshtastic-gateway/
 │
+├── config.py
 ├── defesa_civil_alertas.py
 ├── defesa_civil_localizacao.py
 │
