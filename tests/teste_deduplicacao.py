@@ -271,11 +271,6 @@ def main():
             )
 
             print(
-                f"Afeta localização: "
-                f"{alerta.get('affected')}"
-            )
-
-            print(
                 f"Assinatura registrada: "
                 f"{bool(alerta.get('signature'))}"
             )
@@ -304,8 +299,9 @@ def main():
         sucesso_estado = (
             alerta is not None
             and alerta.get("active") is True
-            and alerta.get("affected") is True
             and bool(alerta.get("signature"))
+            and alerta.get("status") == "Actual"
+            and alerta.get("msgType") == "Alert"
         )
 
         print("=" * 80)
