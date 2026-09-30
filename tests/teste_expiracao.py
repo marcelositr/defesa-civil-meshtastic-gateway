@@ -225,18 +225,7 @@ def main():
         else:
 
             print(
-                f"Ativo: "
-                f"{alerta.get('active')}"
-            )
-
-            print(
-                f"Expirado: "
-                f"{alerta.get('expired')}"
-            )
-
-            print(
-                f"Afeta localização: "
-                f"{alerta.get('affected')}"
+                "Estado: alerta expirado não foi persistido"
             )
 
         print()
@@ -255,10 +244,6 @@ def main():
 
         sucesso_estado = (
             alerta is None
-            or (
-                alerta.get("active") is False
-                and alerta.get("expired") is True
-            )
         )
 
         print("=" * 80)
@@ -286,7 +271,7 @@ def main():
         )
 
         print(
-            "Estado marcado como expirado/inativo: "
+            "Estado do alerta expirado não foi persistido: "
             + (
                 "OK"
                 if sucesso_estado
