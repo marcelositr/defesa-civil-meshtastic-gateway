@@ -365,30 +365,17 @@ def main():
             )
 
             print(
-                f"Afeta localização: "
-                f"{dados.get('affected')}"
+                f"Status: {dados.get('status')}"
             )
 
-            if "updated_from" in dados:
+            print(
+                f"Tipo: {dados.get('msgType')}"
+            )
 
-                print(
-                    f"Atualizado a partir de: "
-                    f"{dados['updated_from']}"
-                )
-
-            if "updated_by" in dados:
-
-                print(
-                    f"Atualizado por: "
-                    f"{dados['updated_by']}"
-                )
-
-            if "cancelled_by" in dados:
-
-                print(
-                    f"Cancelado por: "
-                    f"{dados['cancelled_by']}"
-                )
+            print(
+                f"Assinatura registrada: "
+                f"{bool(dados.get('signature'))}"
+            )
 
         print()
 
@@ -425,9 +412,6 @@ def main():
             and alerta_update.get(
                 "active"
             ) is False
-            and alerta_update.get(
-                "cancelled_by"
-            ) == "TEST-ALERT-003"
         )
 
         sucesso_original = (
