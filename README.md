@@ -1,5 +1,7 @@
 # Defesa Civil Meshtastic Gateway
 
+[![CI](https://github.com/marcelositr/defesa-civil-meshtastic-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/marcelositr/defesa-civil-meshtastic-gateway/actions/workflows/ci.yml)
+
 Gateway de alertas oficiais da Defesa Civil para redes Meshtastic.
 
 O projeto consulta o feed oficial de alertas no padrão **CAP (Common Alerting Protocol)**, verifica se a localização configurada está dentro da área geográfica do alerta e prepara a mensagem oficial para retransmissão pela rede Meshtastic.
