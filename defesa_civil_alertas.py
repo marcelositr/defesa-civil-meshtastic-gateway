@@ -4,9 +4,15 @@ import datetime
 import hashlib
 import json
 import os
+import time
 import xml.etree.ElementTree as ET
 
-from config import LOCATION_MODE, MAX_MESSAGE_LENGTH, STATE_FILE
+from config import (
+    CHECK_INTERVAL,
+    LOCATION_MODE,
+    MAX_MESSAGE_LENGTH,
+    STATE_FILE,
+)
 from defesa_civil_localizacao import (
     alerta_processado_atinge_localizacao,
     buscar_alertas,
@@ -397,7 +403,6 @@ def processar_alertas(
         # ====================================================
         # UPDATE
         # ====================================================
-
         if msg_type == "Update":
 
             if not alerta_processado_atinge_localizacao(
@@ -788,35 +793,7 @@ def exibir_alerta(
 # MAIN
 # ============================================================
 
-def main():
-
-    print("=" * 80)
-    print("DEFESA CIVIL - PROCESSADOR DE ALERTAS")
-    print("=" * 80)
-
-    print()
-
-    nome, latitude, longitude = (
-        obter_localizacao()
-    )
-
-    print(
-        f"Modo:       {LOCATION_MODE}"
-    )
-
-    print(
-        f"Local:      {nome}"
-    )
-
-    print(
-        f"Latitude:   {latitude}"
-    )
-
-    print(
-        f"Longitude:  {longitude}"
-    )
-
-    print()
+def executar_ciclo(latitude, longitude):
 
     print(
         "Consultando feed oficial da Defesa Civil..."
@@ -876,6 +853,97 @@ def main():
             "Nenhum alerta novo ou atualizado "
             "atinge a localização."
         )
+
+
+def main():
+
+    print("=" * 80)
+    print("DEFESA CIVIL - PROCESSADOR DE ALERTAS")
+    print("=" * 80)
+
+    print()
+
+    nome, latitude, longitude = (
+        obter_localizacao()
+    )
+
+    print(
+        f"Modo:       {LOCATION_MODE}"
+    )
+
+    print(
+        f"Local:      {nome}"
+    )
+
+    print(
+        f"Latitude:   {latitude}"
+    )
+
+    print(
+        f"Longitude:  {longitude}"
+    )
+
+    print(
+        f"Intervalo:  {CHECK_INTERVAL} segundos"
+    )
+
+    print()
+
+    print(
+        "Gateway em monitoramento contínuo."
+    )
+
+    print()
+
+    while True:
+
+        try:
+
+            executar_ciclo(
+                latitude,
+                longitude,
+            )
+
+        except KeyboardInterrupt:
+
+            print()
+            print(
+                "Monitoramento encerrado pelo usuário."
+            )
+            break
+
+        except Exception as erro:
+
+            print()
+            print("=" * 80)
+            print("ERRO NO CICLO DE MONITORAMENTO")
+            print("=" * 80)
+            print(
+                f"{type(erro).__name__}: {erro}"
+            )
+            print()
+            print(
+                "O gateway continuará monitorando e tentará "
+                "novamente no próximo ciclo."
+            )
+
+        print()
+        print(
+            f"Aguardando {CHECK_INTERVAL} segundos "
+            "para a próxima consulta..."
+        )
+
+        try:
+
+            time.sleep(CHECK_INTERVAL)
+
+        except KeyboardInterrupt:
+
+            print()
+            print(
+                "Monitoramento encerrado pelo usuário."
+            )
+            break
 
 
 if __name__ == "__main__":
