@@ -83,6 +83,21 @@ STATE_FILE = "defesa_civil_state.json"
 
 
 # ============================================================
+# MONITORAMENTO
+# ============================================================
+
+# Intervalo entre consultas ao feed oficial da Defesa Civil,
+# em segundos.
+#
+# 300 segundos = 5 minutos.
+#
+# Cada instalação pode ajustar este valor conforme sua
+# necessidade. A consulta não implica transmissão:
+# o gateway só transmite quando encontra um evento válido.
+CHECK_INTERVAL = 300
+
+
+# ============================================================
 # MENSAGENS MESHTASTIC
 # ============================================================
 
