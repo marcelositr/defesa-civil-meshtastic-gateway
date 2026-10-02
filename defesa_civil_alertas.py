@@ -686,12 +686,31 @@ def montar_texto_oficial(alerta):
 
     if MESSAGE_FIELDS == "default":
 
+        # No modo padrão, somente o primeiro campo disponível
+        # é utilizado:
+        #
+        #   1. headline
+        #   2. description, somente se headline estiver vazio
+        #
+        # A instruction não é usada automaticamente.
         campos = [
             "headline",
             "description",
         ]
 
-    elif isinstance(
+        for campo in campos:
+
+            texto = alerta.get(
+                campo,
+                "",
+            )
+
+            if texto and texto.strip():
+                return texto.strip()
+
+        return ""
+
+    if isinstance(
         MESSAGE_FIELDS,
         (list, tuple),
     ):
