@@ -612,9 +612,7 @@ def montar_texto_oficial(alerta):
                 texto.strip()
             )
 
-    return "
-
-".join(
+    return "\n\n".join(
         partes
     )
 
