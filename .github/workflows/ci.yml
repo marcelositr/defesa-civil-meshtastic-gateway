@@ -43,3 +43,5 @@ jobs:
           python tests/teste_update_cancel.py
           python tests/teste_update_fora.py
           python tests/teste_expiracao.py
+          python tests/teste_mensagem_campos.py
+          python tests/teste_retencao_estado.py
