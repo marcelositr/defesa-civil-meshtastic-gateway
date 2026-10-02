@@ -4,7 +4,7 @@
 
 Gateway de alertas oficiais da Defesa Civil para redes Meshtastic.
 
-O projeto consulta o feed oficial de alertas no padrão **CAP (Common Alerting Protocol)**, verifica se a localização configurada está dentro da área geográfica do alerta e prepara a mensagem oficial para retransmissão pela rede Meshtastic.
+O projeto consulta o feed oficial de alertas no padrão **CAP (Common Alerting Protocol)**, verifica se a localização configurada está dentro da área geográfica do alerta e prepara o conteúdo oficial para retransmissão pela rede Meshtastic.
 
 O objetivo é manter a rede silenciosa durante condições normais e transmitir somente alertas oficiais que realmente atingem a área monitorada.
 
@@ -17,7 +17,8 @@ O objetivo é manter a rede silenciosa durante condições normais e transmitir 
 * Evitar retransmissões duplicadas.
 * Detectar atualizações e cancelamentos de alertas.
 * Ignorar alertas expirados.
-* Preservar o texto oficial da Defesa Civil.
+* Preservar o texto oficial da Defesa Civil, sem resumo ou reescrita.
+* Permitir que o operador escolha quais campos oficiais serão retransmitidos.
 * Dividir mensagens longas em múltiplas mensagens compatíveis com a rede Meshtastic.
 * Manter o tráfego da rede reduzido, evitando mensagens periódicas sem necessidade.
 
@@ -48,7 +49,7 @@ Feed oficial da Defesa Civil
      Estado / Deduplicação
             |
             v
-     Novo / Atualização
+   Seleção do conteúdo
             |
             v
      Mensagem oficial
@@ -59,7 +60,7 @@ Feed oficial da Defesa Civil
 
 ## Fonte dos alertas
 
-O projeto utiliza o feed oficial da Defesa Civil disponibilizado pelo Ministério da Integração e do Desenvolvimento Regional:
+O projeto utiliza o feed oficial de alertas da Defesa Civil disponibilizado pelo Ministério da Integração e do Desenvolvimento Regional:
 
 ```text
 https://idapfile.mdr.gov.br/idap/api/rss/cap
@@ -71,37 +72,64 @@ A aplicação não depende do nome do município presente em `areaDesc` para det
 
 A área geográfica é determinada pelos polígonos fornecidos no próprio alerta CAP.
 
+## Configuração
+
+A configuração central fica em:
+
+```text
+config.py
+```
+
+O arquivo foi organizado para que uma nova instalação possa ser configurada sem precisar alterar o código principal.
+
+### Identificação
+
+```python
+GATEWAY_NAME = "Gateway Defesa Civil - Campos do Jordão"
+```
+
+O nome serve para identificar localmente a instalação. Ele não é publicado automaticamente nas mensagens.
+
+### Localização
+
+O modo atualmente utilizado para uma instalação fixa é:
+
+```python
+LOCATION_MODE = "manual"
+
+LATITUDE = -22.739
+LONGITUDE = -45.591
+```
+
+As coordenadas são usadas localmente para verificar se o gateway está dentro da área geográfica do alerta.
+
+Também existe a opção prevista:
+
+```python
+LOCATION_MODE = "gps"
+```
+
+A integração com o GPS do nó Meshtastic ainda será implementada.
+
+### Intervalo de consulta
+
+O intervalo entre consultas ao feed é configurado em segundos:
+
+```python
+CHECK_INTERVAL = 300
+```
+
+O valor pode ser ajustado conforme a necessidade da instalação.
+
+Uma consulta ao feed não significa uma transmissão pela rede. O gateway somente prepara uma mensagem quando encontra um evento válido que afeta a localização configurada.
+
 ## Filtragem geográfica
 
 Cada alerta pode conter um ou mais polígonos.
 
 O gateway utiliza as coordenadas configuradas para verificar se o ponto está dentro de pelo menos um desses polígonos.
 
-Atualmente existem dois modos previstos:
-
-```text
-manual
-gps
-```
-
-### Modo manual
-
-Utiliza coordenadas definidas na configuração:
-
-```python
-LOCATION_MODE = "manual"
-
-GATEWAY_NAME = "Gateway Defesa Civil - Campos do Jordão"
-
-LATITUDE = -22.739
-LONGITUDE = -45.591
-```
-
-Esse modo é adequado para um gateway instalado em uma localização fixa.
-
-### Modo GPS
-
-A estrutura para utilização do GPS do nó Meshtastic já está prevista, mas a integração com o hardware ainda será implementada.
+Isso permite que o projeto trabalhe com a área geográfica efetivamente fornecida pelo alerta CAP, em vez de depender apenas do nome do município.
 
 ## Processamento CAP
 
@@ -119,13 +147,84 @@ status = Actual
 
 são processados.
 
-Alertas expirados são descartados antes da retransmissão.
+Alertas expirados não são retransmitidos.
 
 Atualizações são relacionadas aos alertas anteriores por meio das referências CAP.
 
 Cancelamentos tornam o alerta referenciado inativo no estado local.
 
-## Deduplicação
+## Conteúdo das mensagens
+
+O gateway **não resume, interpreta ou reescreve** o conteúdo oficial da Defesa Civil.
+
+A escolha dos campos retransmitidos é feita pela configuração `MESSAGE_FIELDS`.
+
+### Modo padrão
+
+Por padrão:
+
+```python
+MESSAGE_FIELDS = "default"
+```
+
+O gateway segue esta ordem:
+
+1. tenta utilizar o `headline`;
+2. se o `headline` estiver vazio, utiliza o `description`;
+3. se ambos estiverem vazios, não transmite o alerta.
+
+O campo `instruction` não é incluído automaticamente no modo padrão.
+
+Essa regra existe porque o conteúdo dos alertas varia conforme a região e a situação. O projeto não tenta adivinhar qual campo é mais importante.
+
+### Seleção manual
+
+O operador pode escolher explicitamente quais campos deseja retransmitir:
+
+```python
+MESSAGE_FIELDS = ["headline"]
+```
+
+ou:
+
+```python
+MESSAGE_FIELDS = ["description"]
+```
+
+ou:
+
+```python
+MESSAGE_FIELDS = ["instruction"]
+```
+
+Também é possível combinar campos:
+
+```python
+MESSAGE_FIELDS = ["headline", "instruction"]
+```
+
+ou:
+
+```python
+MESSAGE_FIELDS = ["headline", "description", "instruction"]
+```
+
+Quando vários campos são selecionados, eles são enviados na mesma mensagem, separados por uma linha em branco.
+
+Campos vazios são ignorados automaticamente. Se todos os campos selecionados estiverem vazios, nenhuma mensagem será transmitida.
+
+O gateway não aplica filtros editoriais próprios sobre o texto. Não são feitos:
+
+* resumo automático;
+* interpretação;
+* classificação própria;
+* alteração de significado;
+* truncamento do conteúdo oficial;
+* inclusão de informações inventadas pelo gateway.
+
+A única alteração prevista é a estrutura necessária para transportar uma mensagem longa pela rede.
+
+## Deduplicação e estado local
 
 O gateway mantém um estado local em:
 
@@ -133,52 +232,43 @@ O gateway mantém um estado local em:
 defesa_civil_state.json
 ```
 
-Esse arquivo registra informações necessárias para impedir que o mesmo alerta seja retransmitido repetidamente.
+Esse arquivo registra informações necessárias para impedir retransmissões repetidas e acompanhar o ciclo de vida dos alertas.
 
 A identificação não depende somente do `identifier`.
 
 Uma assinatura SHA-256 também é criada utilizando campos relevantes do alerta para permitir a detecção de alterações no mesmo alerta.
 
-O arquivo de estado é deliberadamente ignorado pelo Git:
+O arquivo de estado é local para cada instalação e não deve ser versionado no Git:
 
 ```gitignore
 defesa_civil_state.json
 ```
 
-Cada instalação possui seu próprio estado local.
+### Limpeza automática do estado
 
-## Mensagem oficial
+O arquivo de estado não cresce indefinidamente.
 
-O projeto não resume nem reescreve a mensagem da Defesa Civil.
+A retenção é configurada em:
 
-O conteúdo principal utilizado é:
-
-```text
-headline
+```python
+STATE_RETENTION_DAYS = 30
 ```
 
-e, quando disponível, a orientação oficial:
+O padrão de **30 dias** é deliberadamente conservador.
 
-```text
-instruction
-```
+Registros de alertas que já expiraram ou foram cancelados podem ser removidos depois desse período. Alertas que ainda precisam permanecer no estado não são removidos simplesmente por serem antigos.
 
-A `description` não é retransmitida quando ela apenas duplica o `headline`, comportamento observado no feed oficial.
-
-O conteúdo oficial não recebe:
-
-* resumo automático;
-* interpretação;
-* classificação própria;
-* alteração de significado;
-* truncamento;
-* informações inventadas pelo gateway.
-
-A única alteração prevista é a estrutura necessária para transporte pela rede, como a divisão de uma mensagem longa.
+Como regra de segurança, o `config.py` recomenda manter pelo menos **3 dias** de retenção. Valores menores podem ser usados pelo operador, mas ficam sob responsabilidade da instalação.
 
 ## Fragmentação para Meshtastic
 
 Mensagens maiores que o limite configurado são divididas em partes.
+
+O limite padrão é:
+
+```python
+MAX_MESSAGE_LENGTH = 180
+```
 
 Cada parte recebe um marcador de transporte:
 
@@ -200,23 +290,6 @@ Siga as orientações da defesa civil local e do plano de contingência municipa
 
 A fragmentação existe somente para adequar o conteúdo ao transporte pela rede.
 
-## Estado atual
-
-O processamento do feed e a lógica de filtragem já foram testados com dados reais do feed da Defesa Civil.
-
-Testes realizados incluem:
-
-* deduplicação entre execuções;
-* atualização de alertas;
-* cancelamento de alertas;
-* atualização que deixa de atingir a localização;
-* expiração;
-* filtragem geográfica;
-* processamento de múltiplos polígonos;
-* localização sem alerta correspondente.
-
-O feed também foi testado com diferentes localidades para validar o filtro geográfico.
-
 ## Testes
 
 Os testes podem ser executados individualmente:
@@ -229,13 +302,23 @@ python3 tests/teste_expiracao.py
 python3 tests/teste_localizacao.py
 ```
 
+Os testes cobrem, entre outros pontos:
+
+* deduplicação entre execuções;
+* atualização de alertas;
+* cancelamento de alertas;
+* atualização que deixa de atingir a localização;
+* expiração;
+* filtragem geográfica;
+* processamento de múltiplos polígonos;
+* localização sem alerta correspondente.
+
 O projeto também contém ferramentas auxiliares para inspeção e desenvolvimento:
 
 ```text
 tools/debug_cap.py
 tools/defesa_civil_test.py
 tools/teste1.py
-defesa_civil_localizacao.py
 ```
 
 ## Execução
@@ -252,9 +335,11 @@ Execute:
 ./defesa_civil_alertas.py
 ```
 
-A aplicação consulta o feed, processa os alertas e exibe os eventos que atingem a localização configurada.
+A aplicação consulta o feed, processa os alertas e acompanha continuamente os eventos que atingem a localização configurada.
 
-Durante condições sem novos alertas relevantes, o gateway não precisa transmitir mensagens pela rede.
+Durante condições sem novos alertas relevantes, o gateway permanece em monitoramento sem gerar transmissões desnecessárias.
+
+O uso de `systemd` para reiniciar automaticamente o programa após uma falha é opcional e não faz parte da configuração padrão do projeto.
 
 ## Dependências
 
@@ -385,14 +470,14 @@ __pycache__/
 
 não fazem parte do repositório.
 
-## Licença
-
-Este projeto está licenciado sob a **MIT License**. Consulte o arquivo `LICENSE` para o texto completo.
-
 ## Status
 
 **Em desenvolvimento**
 
-A camada de aquisição, interpretação, filtragem geográfica, deduplicação e preparação das mensagens está em desenvolvimento ativo.
+A camada de aquisição, interpretação, filtragem geográfica, deduplicação, retenção do estado e preparação das mensagens está em desenvolvimento ativo.
 
 A integração com o hardware Meshtastic e a transmissão LoRa serão adicionadas em uma etapa posterior.
+
+## Licença
+
+Este projeto está licenciado sob a **MIT License**. Consulte o arquivo `LICENSE` para o texto completo.
