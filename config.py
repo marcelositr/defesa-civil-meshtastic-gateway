@@ -98,6 +98,35 @@ CHECK_INTERVAL = 300
 
 
 # ============================================================
+# RETENÇÃO DO ESTADO LOCAL
+# ============================================================
+
+# Quantos dias manter no arquivo de estado os alertas que já
+# expiraram ou foram cancelados.
+#
+# Isso evita que o arquivo JSON cresça indefinidamente.
+#
+# RECOMENDAÇÃO:
+# Mantenha este valor em pelo menos 3 dias.
+#
+# O feed da Defesa Civil pode apresentar novamente informações
+# relacionadas a alertas anteriores. Manter alguns dias de
+# histórico reduz o risco de um alerta antigo ser interpretado
+# novamente como um alerta novo.
+#
+# Valores menores podem ser usados em instalações específicas,
+# mas não são recomendados sem entender o comportamento do feed.
+#
+# Exemplos:
+#   3  = mantém por 3 dias
+#   7  = mantém por 7 dias
+#   30 = mantém por 30 dias
+#
+# O padrão de 30 dias é deliberadamente conservador.
+STATE_RETENTION_DAYS = 30
+
+
+# ============================================================
 # CONTEÚDO DAS MENSAGENS
 # ============================================================
 
