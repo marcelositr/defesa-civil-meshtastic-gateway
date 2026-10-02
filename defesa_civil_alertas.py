@@ -11,6 +11,7 @@ from config import (
     CHECK_INTERVAL,
     LOCATION_MODE,
     MAX_MESSAGE_LENGTH,
+    MESSAGE_FIELDS,
     STATE_FILE,
 )
 from defesa_civil_localizacao import (
@@ -18,7 +19,6 @@ from defesa_civil_localizacao import (
     buscar_alertas,
     obter_localizacao,
 )
-
 
 # ============================================================
 # NAMESPACES CAP
@@ -403,6 +403,7 @@ def processar_alertas(
         # ====================================================
         # UPDATE
         # ====================================================
+
         if msg_type == "Update":
 
             if not alerta_processado_atinge_localizacao(
@@ -552,42 +553,68 @@ def processar_alertas(
 def montar_texto_oficial(alerta):
 
     """
-    Monta o conteúdo que será retransmitido.
+    Monta o conteúdo que será retransmitido de acordo com
+    MESSAGE_FIELDS definido no config.py.
 
-    O headline é a nota principal publicada pela Defesa Civil.
+    No modo "default", tenta primeiro o headline e, se ele
+    estiver vazio, utiliza a description.
 
-    A description não é utilizada porque, conforme observado
-    no feed real, ela frequentemente duplica o headline.
+    Na seleção manual, somente os campos escolhidos são
+    utilizados.
 
-    A instruction é uma orientação oficial adicional e é
-    preservada integralmente.
+    Campos vazios são ignorados.
 
-    Nenhum dos textos é resumido, reescrito ou truncado.
+    Nenhum texto oficial é resumido, reescrito ou truncado.
     """
 
-    headline = alerta.get(
-        "headline",
-        "",
-    )
+    if MESSAGE_FIELDS == "default":
 
-    instruction = alerta.get(
-        "instruction",
-        "",
-    )
+        campos = [
+            "headline",
+            "description",
+        ]
+
+    elif isinstance(
+        MESSAGE_FIELDS,
+        (list, tuple),
+    ):
+
+        campos = MESSAGE_FIELDS
+
+    else:
+
+        raise ValueError(
+            "MESSAGE_FIELDS deve ser 'default' ou uma lista "
+            "contendo headline, description e/ou instruction."
+        )
 
     partes = []
 
-    if headline:
-        partes.append(
-            headline
+    for campo in campos:
+
+        if campo not in (
+            "headline",
+            "description",
+            "instruction",
+        ):
+            raise ValueError(
+                f"Campo inválido em MESSAGE_FIELDS: {campo}"
+            )
+
+        texto = alerta.get(
+            campo,
+            "",
         )
 
-    if instruction:
-        partes.append(
-            instruction
-        )
+        if texto and texto.strip():
 
-    return "\n\n".join(
+            partes.append(
+                texto.strip()
+            )
+
+    return "
+
+".join(
         partes
     )
 
