@@ -98,6 +98,53 @@ CHECK_INTERVAL = 300
 
 
 # ============================================================
+# CONTEÚDO DAS MENSAGENS
+# ============================================================
+
+# Define quais campos de texto do alerta CAP serão enviados
+# pela rede Meshtastic.
+#
+# "default"
+#     Modo recomendado para a maioria das instalações.
+#
+#     O gateway tenta primeiro o HEADLINE.
+#     Se o HEADLINE estiver vazio, tenta a DESCRIPTION.
+#     Se os dois estiverem vazios, o alerta NÃO será enviado.
+#
+#     A INSTRUCTION não é utilizada automaticamente no modo
+#     default, pois pode conter informações complementares
+#     e ser muito extensa.
+#
+# Você também pode escolher manualmente um ou mais campos.
+#
+# Exemplos:
+#
+#     ["headline"]
+#         Envia somente o Headline.
+#
+#     ["description"]
+#         Envia somente a Descrição.
+#
+#     ["instruction"]
+#         Envia somente a Instrução.
+#
+#     ["headline", "instruction"]
+#         Envia o Headline e a Instrução.
+#
+#     ["headline", "description", "instruction"]
+#         Envia todos os campos disponíveis.
+#
+# Campos vazios são ignorados automaticamente.
+#
+# Se nenhum dos campos escolhidos tiver conteúdo,
+# nenhuma mensagem será transmitida.
+#
+# Para uma instalação simples e econômica, deixe:
+#     MESSAGE_FIELDS = "default"
+MESSAGE_FIELDS = "default"
+
+
+# ============================================================
 # MENSAGENS MESHTASTIC
 # ============================================================
 
