@@ -339,7 +339,117 @@ def alerta_para_estado(alerta, assinatura):
             "",
         ),
         "active": True,
+        "last_seen": datetime.datetime.now(
+            datetime.timezone.utc
+        ).isoformat(),
     }
+
+
+# ============================================================
+# LIMPEZA DO ESTADO
+# ============================================================
+
+def limpar_estado(estado):
+
+    """
+    Remove do estado local somente registros que já não
+    precisam ser mantidos.
+
+    Alertas ativos não são removidos automaticamente.
+
+    Alertas expirados ou cancelados só são removidos depois
+    de STATE_RETENTION_DAYS. Isso mantém uma margem de
+    segurança para a deduplicação e para o comportamento do
+    feed da Defesa Civil.
+    """
+
+    from config import STATE_RETENTION_DAYS
+
+    agora = datetime.datetime.now(
+        datetime.timezone.utc
+    )
+
+    limite = (
+        agora
+        - datetime.timedelta(
+            days=STATE_RETENTION_DAYS
+        )
+    )
+
+    remover = []
+
+    for identifier, registro in estado.items():
+
+        if registro.get("active", True):
+            expires = registro.get(
+                "expires",
+                "",
+            )
+
+            if not expires:
+                continue
+
+            try:
+                data_expiracao = (
+                    datetime.datetime.fromisoformat(
+                        expires
+                    )
+                )
+
+            except ValueError:
+                continue
+
+            if data_expiracao.tzinfo is None:
+                data_expiracao = (
+                    data_expiracao.replace(
+                        tzinfo=datetime.timezone.utc
+                    )
+                )
+
+            if data_expiracao > limite:
+                continue
+
+            remover.append(identifier)
+            continue
+
+        ultima_atividade = registro.get(
+            "last_seen",
+            "",
+        )
+
+        if not ultima_atividade:
+            ultima_atividade = registro.get(
+                "sent",
+                "",
+            )
+
+        if not ultima_atividade:
+            continue
+
+        try:
+            data_atividade = (
+                datetime.datetime.fromisoformat(
+                    ultima_atividade
+                )
+            )
+
+        except ValueError:
+            continue
+
+        if data_atividade.tzinfo is None:
+            data_atividade = (
+                data_atividade.replace(
+                    tzinfo=datetime.timezone.utc
+                )
+            )
+
+        if data_atividade <= limite:
+            remover.append(identifier)
+
+    for identifier in remover:
+        del estado[identifier]
+
+    return len(remover)
 
 
 # ============================================================
@@ -397,6 +507,11 @@ def processar_alertas(
                 if anterior is not None:
 
                     anterior["active"] = False
+                    anterior["last_seen"] = (
+                        datetime.datetime.now(
+                            datetime.timezone.utc
+                        ).isoformat()
+                    )
 
             continue
 
@@ -536,6 +651,8 @@ def processar_alertas(
             ignorados.append(
                 alerta
             )
+
+    limpar_estado(estado)
 
     salvar_estado(estado)
 
